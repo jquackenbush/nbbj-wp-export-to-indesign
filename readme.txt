@@ -1,0 +1,1 @@
+Edits to print.php and taggedtext.php are based on version 1.10 of DirtySuds Export to InDesign plugin for WordPress.
