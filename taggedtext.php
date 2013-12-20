@@ -1,5 +1,5 @@
 <?php
-/* 8-10-12 update of NBBJ edits to v1.03 by jquackenbush for v1.10 */
+/* 12-20-13 update of NBBJ edits to v1.03 by jquackenbush for v1.10 */
 $options = get_option('dirtysuds_export_options');
 
 /* if ($options['outputFormat'])
@@ -133,8 +133,10 @@ elseif (in_category($spotlightCat)) {
 	
 	$allowed_taggedtext_tags = array(
 		'p'      => array(
-// 120515			'style'	=> array()  // NBBJ
-			),
+			'style'	=> array(
+				'text-align' => array() // NBBJ 131216
+			)  // NBBJ
+		),
 		'br'     => array(),
 		'b'      => array(),
 		'strong' => array(),
@@ -167,8 +169,8 @@ elseif (in_category($spotlightCat)) {
 		"<pre>"     =>$newLine.'<ParaStyle:'.$postparastyle.'>', // NBBJ
 		"</pre>"    =>$newLine,
 		'<p>'       =>$newLine.'<ParaStyle:'.$postparastyle.'>', // NBBJ
-		'<p style='.chr(34).'text-align\: center;'.chr(34).'>'		=>$newLine.'<pTextAlignment:Center>', // NBBJ
-		'<p style='.chr(34).'text-align\: right;'.chr(34).'>'		=>$newLine.'<pTextAlignment:Right>', // NBBJ 120530 right flush
+		'<p style=<0x0022>text-align: center<0x0022>>'		=>$newLine.'<pTextAlignment:Center>', // NBBJ
+		'<p style=<0x0022>text-align: right<0x0022>>'		=>$newLine.'<pTextAlignment:Right>', // NBBJ 120530 right flush
 		'</p>'		=>'',
 		'<br />'	=>'<0x000A>', // NBBJ 120523
 		'<b>'       =>'<cTypeface:Bold>',
@@ -219,7 +221,7 @@ elseif (in_category($spotlightCat)) {
 		'&OElig;'  => "\xee",
 		'&scaron;' => '<0x0161>',
 		'&Scaron;' => '<0x0160>',
-		'…'	=> '<0x2026>' // NBBJ 120620 ellipsis
+		'â€¦'	=> '<0x2026>' // NBBJ 120620 ellipsis
 	);
 
 	$html_tags = array(
@@ -446,8 +448,30 @@ function nbbj_subhead_taggedtext(){
 	return $subhead;
 }
 
+function nbbj_byline_taggedtext(){
+	global $bylinestyle;
+	echo "<ParaStyle:" . $bylinestyle .">";
+	// CHECK TO SEE IF AUTHOR IS GUEST_AUTHOR AND IF SO, OUTPUT THAT VALUE
+	$guest_author = get_post_custom_values("guest_author");
+	$nbbjauthor = get_the_author();
+	// 120810 push author title to next line with soft return in byline
+	$nbbjauthortitle = array(
+		", Business Journal" => "<0x000A>Business Journal",
+		", Special to the Business Journal" => "<0x000A>Special to the Business Journal",
+		", Event Development Manager" => "<0x000A>Event Development Manager"
+		);
+	$nbbjauthor = strtr($nbbjauthor,$nbbjauthortitle);
+	$nbbjauthorID = get_the_author_meta('ID');
+	$guest_author['0'] = strtr($guest_author['0'],$nbbjauthortitle);
+	if ( $guest_author['0'] ) { echo "By " . $guest_author['0']; } 
+	// omit "By" for Business Journal Staff Report and Business Journal Editorial
+	elseif(($nbbjauthorID === 10) || ($nbbjauthorID === 17)) { echo $nbbjauthor; }
+	else { echo "By " . $nbbjauthor; }
+}
+
 // We don't want any optimization plugins mistaking our output for HTML. Let's turn them off.
-ob_end_clean();
+// 131111 gbuce removed because it was clipping the style definitions at the top of the tagged-text file and not creating the file.
+// ob_end_clean(); 
 
 // We don't want the browser to render the file, only download it. Let's call it a binary file
 header('Content-type: binary/text; charset=utf-8');
@@ -464,20 +488,23 @@ echo $outputFormat; ?>
 echo $defineStyles;
 echo nbbj_pullquote_taggedtext(); // 120803
 echo nbbj_captions_taggedtext();
-// 120807 for Spotlights and Profiles no byline, subhead as category above the headline
+// 120807 for Spotlights and Profiles subhead as category above the headline
 if (in_category($spotlightCat)) {
 	echo nbbj_subhead_taggedtext();
 	echo nbbj_headline_taggedtext();
+	echo nbbj_byline_taggedtext();
 }
-// 120807 no byline in Business Register
-elseif (in_category(14)) {
+// 130708 no byline in Business Register or Amplifications & Corrections
+elseif (in_category(14) || in_category(4826)) {
 	echo nbbj_headline_taggedtext();
 }
-// 120807 all other types of stories
+// 130708 all other types of stories
 else {
 	echo nbbj_headline_taggedtext();
 	echo nbbj_subhead_taggedtext();
-	?><ParaStyle:<?php echo $bylinestyle; ?>><?php
+	echo nbbj_byline_taggedtext();
+}
+/*	?><ParaStyle:<?php echo $bylinestyle; ?>><?php
 					// CHECK TO SEE IF AUTHOR IS GUEST_AUTHOR AND IF SO, OUTPUT THAT VALUE
 					// omit "By" for Business Journal Staff Report and Business Journal Editorial
 					// 120810 push author title to next line with soft return in byline
@@ -493,8 +520,7 @@ else {
 					$guest_author['0'] = strtr($guest_author['0'],$nbbjauthortitle);
 					if ( $guest_author['0'] ) { ?>By <?php echo $guest_author['0']; } 
 						elseif(($nbbjauthorID === 10) || ($nbbjauthorID === 17)) { echo $nbbjauthor; }
-						else { ?>By <?php echo $nbbjauthor; }
-}
+						else { ?>By <?php echo $nbbjauthor; } */
 echo dirtysuds_content_taggedtext();
 endwhile;
 endif;
