@@ -35,13 +35,8 @@ img { width: 50%; max-width: 200px; height:auto; }
 $statusreplace = array('Published', 'Pending review by an editor', 'Draft', 'Assigned to a writer', 'Scheduled to post in the future','Sent to Production', 'Story idea', 'Waiting for editor feedback');
 $statussubject = get_post_status( $ID );
 echo str_replace($statussearch, $statusreplace, $statussubject); ?>
-<?php /* <p class="header"><strong>Publication:</strong> <?php
-	$print_current_post_id = $post->ID;
-	$post_for_print = get_post($print_current_post_id);
-	$origpostdatetime = $post_for_print->post_date;
-	$origpostdatetime = date_create_from_format('Y-m-d G:i:s', $origpostdatetime);
-	echo date_format($origpostdatetime, 'F j, Y, g:i a'); ?></p><?php */ ?>
-<p class="header"><strong>Modified:</strong> <?php the_modified_date('F j, Y'); ?> at <?php the_modified_date('g:i a'); ?></p>
+<p class="header"><strong>Publication:</strong> <?php the_time('F j, Y, g:i a'); ?></p>
+<p class="header"><strong>Modified:</strong> <?php the_modified_date('F j, Y, g:i a'); ?></p>
 <p class="header"><strong>Production notes:</strong> <?php echo get_post_meta($post->ID, 'story_production_notes', true); ?></p>
 <p class="header"><strong>Photo captions:</strong> <?php 
 	$storycaptions = get_post_meta($post->ID, 'story_captions', true); 
