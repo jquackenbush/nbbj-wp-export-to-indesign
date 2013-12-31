@@ -1,5 +1,5 @@
 <?php
-/* 11-30-12 edits by jquackenbush */
+/* 12-30-2013 edits by jquackenbush */
 if (have_posts()): while (have_posts()): the_post();
 ob_end_clean();
 ?><html><head><title><?php the_title_attribute(); ?></title>
